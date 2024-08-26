@@ -1,0 +1,95 @@
+Ordre	Famille	Genre	Espece	hauteur_eau	similitude_CO1	similitude_teleo	similitude_MiFish	nbr_CS_CO1	nbr_CS_teleo	nbr_CS_MiFish	taille	poids	nbr_peche	POO_CO1	POO_teleo	POO_MiFish	RRA_CO1	RRA_teleo	RRA_MiFish	mean_RRA	nbr_marqueur	metabarcoding	code_taxon	ref_CO1	ref_teleo	ref_MiFish	crique	fleuve	estuaire	saut	berge	marais
+Characiformes	Acestrorhynchidae	Acestrorhynchus	acestrorhynchus falcatus	pelagique	0.99	1	1	2	6	8	200	69.0294117647059	1.1818181818181819	1.117	1.55	2.174	3.356	1.122	3.337	2.605	3	1	AFAL	1	1	1	1	0	0	0	0	0
+Characiformes	Acestrorhynchidae	Acestrorhynchus	acestrorhynchus microlepis	pelagique	NA	1	0.98	0	6	6	150	50.7535714285714	5.818181818181818	0	1.55	1.63	0	0.146	0.207	0.1765	2	1	AMIC	1	1	1	0	1	0	0	0	0
+Characiformes	Anostomidae	Leporinus	leporinus acutidens	pelagique	1	1	1	7	7	13	230	357.021739130435	1.5454545454545454	3.911	1.809	3.533	1.909	3.836	3.354	3.033	3	1	LACU	1	1	1	0	1	0	0	0	0
+Characiformes	Characidae	Astyanax	astyanax leopoldi	pelagique	NA	1	0.99	0	1	1	40	0	0	0	0.258	0.272	0	0.094	0.052	0.073	2	1	ALEO	1	1	1	0	1	0	1	0	0
+Characiformes	Characidae	Charax	charax niger	pelagique	1	1	1	5	11	11	120	5.05806451612903	1.8181818181818181	2.793	2.842	2.989	1.374	1.264	1.976	1.538	3	1	CHNI	1	1	1	1	0	0	0	1	0
+Characiformes	Characidae	Hemigrammus	hemigrammus ocellifer	pelagique	1	0.98	0.99	4	13	8	30	0	0	2.235	3.359	2.174	5.178	6.05	2.967	4.73166666666667	3	1	HOCE	1	1	1	1	0	0	0	0	0
+Characiformes	Characidae	Hemigrammus	hemigrammus unilineatus	pelagique	NA	1	1	0	2	1	30	0	0	0	0.517	0.272	0	0.739	0.146	0.4425	2	1	HUNI	1	1	1	1	0	0	0	0	0
+Characiformes	Characidae	Hyphessobrycon	hyphessobrycon borealis	pelagique	NA	NA	1	0	0	4	20	0	0	0	0	1.087	0	0	0.055	0.055	1	1	HSOV	1	1	1	1	0	0	0	0	0
+Characiformes	Characidae	Hyphessobrycon	hyphessobrycon copelandi	pelagique	1	1	1	8	13	11	20	0	0	4.469	3.359	2.989	1.061	7.737	3.371	4.05633333333333	3	1	HCOP	1	1	1	1	0	0	0	0	0
+Characiformes	Characidae	Jupiaba	jupiaba abramoides	pelagique	NA	1	NA	0	1	0	90	0	0	0	0.258	0	0	0.017	0	0.017	1	1	JABR	1	1	1	1	0	0	0	0	0
+Characiformes	Characidae	Jupiaba	jupiaba meunieri	pelagique	1	1	1	4	11	10	90	12.0233333333333	0	2.235	2.842	2.717	1.308	2.274	2.453	2.01166666666667	3	1	JMEU	1	1	1	1	0	0	0	0	0
+Characiformes	Characidae	Moenkhausia	moenkhausia aff. intermedia	pelagique	NA	1	NA	0	1	0	90	0	0	0	0.258	0	0	0.026	0	0.026	1	1	MINT	1	1	0	0	1	0	1	0	0
+Characiformes	Characidae	Moenkhausia	moenkhausia chrysargyrea	pelagique	1	1	1	1	2	4	80	0	0.5454545454545454	0.559	0.517	1.087	0.057	0.061	0.13	0.0826666666666667	3	1	MCHR	1	1	1	1	0	0	0	0	0
+Characiformes	Characidae	Moenkhausia	moenkhausia collettii	pelagique	1	1	1	2	9	9	50	0	0	1.117	2.326	2.446	2.651	2.239	1.17	2.02	3	1	MCOL	1	1	1	1	0	0	0	0	0
+Characiformes	Characidae	Moenkhausia	moenkhausia grandisquamis	pelagique	1	1	1	9	9	23	90	28.3055555555556	0	5.028	2.326	6.25	3.016	0.17	9.486	4.224	3	1	MGRA	1	1	1	1	0	0	0	0	0
+Characiformes	Characidae	Moenkhausia	moenkhausia hemigrammoides	pelagique	1	1	1	1	5	3	40	0	0	0.559	1.292	0.815	0.359	0.167	0.288	0.271333333333333	3	1	MHEM	1	1	1	1	0	0	0	0	0
+Characiformes	Characidae	Moenkhausia	moenkhausia oligolepis	pelagique	0.95	0.97	0.96	1	3	3	80	1.64	0	0.559	0.775	0.815	0.082	0.833	0.218	0.377666666666667	3	1	MOLI	1	1	1	1	0	0	0	0	0
+Characiformes	Characidae	Phenacogaster	phenacogaster wayana	pelagique	1	1	1	5	9	6	35	0	0	2.793	2.326	1.63	0.852	3.045	5.598	3.165	3	1	PWAN	1	1	1	0	1	0	0	0	0
+Characiformes	Characidae	Tetragonopterus	tetragonopterus georgiae	pelagique	1	NA	1	7	0	7	70	7.8	0	3.911	0	1.902	0.259	0	0.93	0.5945	2	1	MGEO	1	1	1	0	1	0	1	0	0
+Characiformes	Characidae	Thayeria	thayeria ifati	pelagique	1	1	0.99	1	4	3	30	0	0	0.559	1.034	0.815	2.151	1.204	2.028	1.79433333333333	3	1	TIFA	1	1	1	1	0	0	0	0	0
+Characiformes	Characidae	aff. tetramerus?, espèce cryptique,	poptella brevispina	pelagique	NA	1	1	0	10	5	90	13.9	3.1818181818181817	0	2.584	1.359	0	1.531	0.31	0.9205	2	1	PBRE	1	1	1	0	0	0	0	1	0
+Characiformes	Curimatidae	Curimata	curimata cyprinoides	pelagique	1	1	1	4	5	2	180	92.2944444444444	15.727272727272727	2.235	1.292	0.543	1.343	2.359	2.73	2.144	3	1	CCYP	1	1	1	0	1	0	0	0	1
+Characiformes	Curimatidae	Cyphocharax	cyphocharax aff. spilurus	pelagique	1	1	0.99	3	5	7	80	0	0.09090909090909091	1.676	1.292	1.902	6.225	4.073	4.694	4.99733333333333	3	1	CYP1	1	1	1	0	1	0	0	0	1
+Characiformes	Curimatidae	Cyphocharax	cyphocharax biocellatus	pelagique	NA	0.98	1	0	6	5	80	0	0	0	1.55	1.359	0	1.019	0.422	0.7205	2	1	CBIO	1	1	1	1	1	0	0	0	0
+Characiformes	Curimatidae	Cyphocharax	cyphocharax helleri	pelagique	NA	1	1	10	29	23	80	5.57272727272727	0	5.587	7.494	6.25	5.937	5.055	4.199	5.06366666666667	3	1	CHEL	1	1	1	1	1	0	0	0	0
+Characiformes	Curimatidae	Cyphocharax	cyphocharax spilurus	pelagique	NA	1	NA	0	1	0	80	0	0.9090909090909091	0	0.258	0	0	0.052	0	0.052	1	1	CYSP	1	1	1	0	1	0	0	0	0
+Characiformes	Erythrinidae	Hoplias	hoplias aimara	mixte	1	1	1	8	18	14	600	1790.40625	1.9090909090909092	4.469	4.651	3.804	14.864	7.286	6.474	9.54133333333333	3	1	HAIM	1	1	1	0	1	0	0	0	0
+Characiformes	Gasteropelecidae	Gasteropelecus	gasteropelecus sternicla	surface	NA	0.98	0.96	0	3	3	45	0	0	0	0.775	0.815	0	0.157	0.113	0.135	2	1	GSTE	1	1	1	0	1	0	0	0	0
+Characiformes	Hemiodontidae	Hemiodus	hemiodus aff. unimaculatus	pelagique	1	1	1	6	15	12	200	418.9	37.36363636363637	3.352	3.876	3.261	3.554	7.419	3.059	4.67733333333333	3	1	HEUN2	1	1	1	0	1	0	0	0	0
+Characiformes	Hemiodontidae	Hemiodus	hemiodus huraulti	pelagique	1	1	1	4	7	8	140	0	0	2.235	1.809	2.174	1.76	1.218	0.455	1.14433333333333	3	1	HHUR	1	1	1	0	1	0	0	0	0
+Characiformes	Iguanodectidae	Bryconops	bryconops aff. caudomaculatus	pelagique	0.99	1	1	6	10	10	110	18.9592592592593	4.090909090909091	3.352	2.584	2.717	1.825	2.139	3.524	2.496	3	1	BCAU2	1	1	1	0	1	0	0	0	0
+Characiformes	Iguanodectidae	Bryconops	bryconops aff. melanurus	pelagique	0.96	0.96	0.98	5	8	8	110	0	0	2.793	2.067	2.174	1.686	2.691	1.421	1.93266666666667	3	1	NA	1	1	1	0	1	0	0	0	0
+Characiformes	Iguanodectidae	Bryconops	bryconops affinis	pelagique	1	1	1	2	5	6	110	15.633333333333301	0	1.117	1.292	1.63	0.823	1.923	1.363	1.36966666666667	3	1	BAFF	1	1	1	1	0	0	0	0	0
+Characiformes	Iguanodectidae	Bryconops	bryconops melanurus	pelagique	1	1	0.99	8	12	10	110	18.9058823529412	1.2727272727272727	4.469	3.101	2.717	1.768	2.379	1.649	1.932	3	1	BMEL	1	1	1	1	0	0	0	0	0
+Characiformes	Iguanodectidae	Piabucus	piabucus dentatus	pelagique	1	1	1	3	3	3	140	21.1	2.6363636363636362	1.676	0.775	0.815	0.129	0.106	0.129	0.121333333333333	3	1	PDEN	1	1	1	0	1	0	0	0	1
+Characiformes	Lebiasinidae	Nannostomus	nannostomus bifasciatus	pelagique	NA	NA	1	0	0	1	35	0	0	0	0	0.272	0	0	0.004	0.004	1	1	NBIF	1	1	1	1	0	0	0	0	0
+Characiformes	Serrasalmidae	Myloplus	myloplus rhomboidalis	pelagique	0.98	1	0.99	4	8	6	300	0	0.36363636363636365	2.235	2.067	1.63	0.552	1.118	0.271	0.647	3	1	MRHO	1	1	1	0	1	0	0	0	0
+Characiformes	Serrasalmidae	Myloplus	myloplus ternetzi	pelagique	1	1	1	4	6	6	200	0	7.181818181818182	2.235	1.55	1.63	0.485	0.594	0.081	0.386666666666667	3	1	MTER	1	1	1	0	1	0	0	0	0
+Characiformes	Serrasalmidae	Myloplus	myloplus tumukumak	pelagique	0.98	1	0.99	7	9	8	200	0	0.36363636363636365	3.911	2.326	2.174	0.673	0.817	0.069	0.519666666666667	3	1	MTUM	1	1	1	0	1	0	0	0	0
+Characiformes	Serrasalmidae	Serrasalmus	serrasalmus eigenmanni	pelagique	NA	1	1	0	5	3	150	0	8.181818181818182	0	1.292	0.815	0	0.068	0.033	0.0505	2	1	SHUM	1	1	1	0	1	0	0	0	0
+Cichliformes	Cichlidae	Aequidens	aequidens tetramerus	mixte	NA	0.95	0.98	0	4	3	90	0	0	0	1.034	0.815	0	0.497	0.102	0.2995	2	1	ATET	1	1	1	1	1	0	0	0	0
+Cichliformes	Cichlidae	Apistogramma	apistogramma gossei	mixte	NA	0.98	0.97	0	6	5	40	0	0	0	1.55	1.359	0	4.816	4.824	4.82	2	1	AGOS	1	1	1	1	0	0	0	0	0
+Cichliformes	Cichlidae	Cleithracara	cleithracara maronii	mixte	NA	0.98	0.98	0	1	1	65	0	0	0	0.258	0.272	0	0.144	0.084	0.114	2	1	CMAR	1	1	1	1	0	0	0	0	0
+Cichliformes	Cichlidae	Crenicichla	crenicichla albopunctata	mixte	NA	0.96	0.97	0	1	1	140	0	0.09090909090909091	0	0.258	0.272	0	0.027	0.054	0.0405	2	1	CALB	1	1	1	1	0	0	0	0	0
+Cichliformes	Cichlidae	Crenicichla	crenicichla saxatilis	mixte	0.99	NA	NA	1	0	0	170	0	0	0.559	0	0	0.132	0	0	0.132	1	1	CSAX	1	1	0	1	0	0	0	0	1
+Cichliformes	Cichlidae	Geophagus	geophagus camopiensis	mixte	1	1	1	4	8	6	140	45.7166666666667	0.5454545454545454	2.235	2.067	1.63	1.649	1.001	2.221	1.62366666666667	3	1	GCAM	1	1	1	0	1	0	0	0	0
+Cichliformes	Cichlidae	Guianacara	guianacara geayi	mixte	1	1	0.99	3	6	9	80	24.4769230769231	0	1.676	1.55	2.446	4.042	1.898	2.475	2.805	3	1	GGEA	1	1	1	0	0	0	0	1	0
+Cichliformes	Cichlidae	Krobia	krobia sp. 1 aff. guianensis	mixte	1	NA	1	2	0	3	100	0	0	1.117	0	0.815	0.248	0	0.41	0.329	2	1	KGUI SP1	1	1	1	1	0	0	0	1	0
+Cichliformes	Cichlidae	Nannacara	nannacara anomala	mixte	NA	1	NA	0	2	0	40	0	0	0	0.517	0	0	0.426	0	0.426	1	1	NANO	1	1	1	0	0	0	0	1	1
+Cichliformes	Cichlidae	Nannacara	nannacara aureocephalus	mixte	NA	NA	1	0	0	2	40	0	0	0	0	0.543	0	0	0.264	0.264	1	1	NAUR	1	1	1	1	0	0	0	0	0
+Gymnotiformes	Gymnotidae	Gymnotus	gymnotus aff. coropinae	benthique	NA	0.98	NA	0	1	0	200	0	0	0	0.258	0	0	0.003	0	0.003	1	1	NA	1	1	1	1	0	0	0	0	0
+Gymnotiformes	Gymnotidae	Gymnotus	gymnotus carapo	mixte	NA	1	NA	0	1	0	300	0	0	0	0.258	0	0	0.265	0	0.265	1	1	GCAR	1	1	1	1	0	0	0	0	0
+Gymnotiformes	Hypopomidae	Hypopomus	hypopomus artedi	mixte	1	0.98	0.99	2	2	1	300	0	0	1.117	0.517	0.272	0.108	0.281	0.04	0.143	3	1	HART	1	1	1	0	1	0	0	0	0
+Gymnotiformes	Sternopygidae	Eigenmannia	eigenmannia cf. pavulagem	mixte	1	1	1	4	3	4	250	0	0	2.235	0.775	1.087	3.412	1.709	1.929	2.35	3	1	NA	1	1	1	1	1	0	0	0	0
+Gymnotiformes	Sternopygidae	Japigny	japigny kirschbaum	mixte	NA	1	NA	0	1	0	140	0	0	0	0.258	0	0	1.079	0	1.079	1	1	JKIR	1	1	1	1	1	0	0	0	0
+Myliobatiformes	Potamotrygonidae	Potamotrygon	potamotrygon orbignyi	benthique	1	1	1	10	16	13	500	893.730769230769	0	5.587	4.134	3.533	7.1	1.982	3.406	4.16266666666667	3	1	POOR	1	1	1	0	1	0	0	0	0
+Perciformes	Sciaenidae	Pachypops	pachypops fourcroi	benthique	1	1	1	3	5	5	150	55.9	0.36363636363636365	1.676	1.292	1.359	7.497	6.494	7.19	7.06033333333333	3	1	PFOU	1	1	1	0	1	0	0	0	0
+Perciformes	Sciaenidae	Plagioscion	plagioscion squamosissimus	benthique	1	1	1	9	19	15	350	1053.73870967742	1.5454545454545454	5.028	4.91	4.076	0.419	2.46	1.371	1.41666666666667	3	1	PSQU	1	1	1	0	1	0	0	0	0
+Siluriformes	Auchenipteridae	Ageneiosus	ageneiosus inermis	mixte	0.99	0.97	0.98	4	10	7	300	522.044444444444	6.2727272727272725	2.235	2.584	1.902	0.191	0.336	0.289	0.272	3	1	AINE	1	1	1	0	1	0	0	0	0
+Siluriformes	Auchenipteridae	Ageneiosus	ageneiosus ucayalensis	mixte	NA	1	0.99	0	5	3	230	97.0545454545454	7.2727272727272725	0	1.292	0.815	0	0.022	0.029	0.0255	2	1	AUCA	1	1	1	0	1	0	0	0	0
+Siluriformes	Auchenipteridae	Auchenipterus	auchenipterus nuchalis	mixte	NA	1	0.99	0	4	2	160	20.3807692307692	5.909090909090909	0	1.034	0.543	0	0.29	0.136	0.213	2	1	ANUC	1	1	1	0	1	0	0	0	0
+Siluriformes	Callichthyidae	Corydoras	corydoras aff. brevirostris	benthique	1	1	1	1	3	2	25	0	0	0.559	0.775	0.543	6.737	1.911	4.978	4.542	3	1	COBR	1	1	1	0	0	1	0	0	0
+Siluriformes	Heptapteridae	Pimelodella	pimelodella cf. parnahybae	benthique	NA	1	NA	0	1	0	150	0	0	0	0.258	0	0	0.027	0	0.027	1	1	NA	1	1	1	0	1	0	0	0	0
+Siluriformes	Heptapteridae	Pimelodella	pimelodella geryi	benthique	0.99	0.98	1	1	1	1	150	0	0.09090909090909091	0.559	0.258	0.272	0.23	0.025	0.057	0.104	3	1	PGER	1	1	1	0	1	0	0	0	0
+Siluriformes	Loricariidae	Guyanancistrus	guyanancistrus brevispinis	benthique	NA	1	1	0	1	3	100	0	0	0	0.258	0.815	0	0.001	0.11	0.0555	2	1	GBRE	1	1	1	0	1	0	0	0	0
+Siluriformes	Loricariidae	Harttia	harttia guianensis	benthique	1	1	1	2	2	3	120	14.7	0.18181818181818182	1.117	0.517	0.815	0.588	0.22	0.126	0.311333333333333	3	1	HSUR	1	1	1	0	1	0	0	0	0
+Siluriformes	Loricariidae	Hypostomus	hypostomus gymnorhynchus	benthique	1	0.97	NA	2	3	0	150	0	1.7272727272727273	1.117	0.775	0	2.414	1.046	0	1.73	2	1	HGYM	1	1	1	0	1	0	0	0	0
+Siluriformes	Loricariidae	Hypostomus	hypostomus plecostomus	benthique	NA	NA	0.99	0	0	5	150	0	0.45454545454545453	0	0	1.359	0	0	1.073	1.073	1	1	HVEN	1	1	1	0	1	0	0	0	0
+Siluriformes	Pimelodidae	Brachyplatystoma	brachyplatystoma vaillantii	benthique	NA	1	1	0	1	1	400	1678.14285714286	0	0	0.258	0.272	0	0.007	0.039	0.023	2	1	BVAI	1	1	1	0	1	0	0	0	0
+Siluriformes	Pimelodidae	Pseudoplatystoma	pseudoplatystoma fasciatum	benthique	NA	1	0.99	0	2	2	750	3110	0	0	0.517	0.543	0	0.004	0.029	0.0165	2	1	PFAS	1	1	1	0	1	0	0	0	0
+Clupeiformes	Engraulidae	Anchovia	anchovia surinamensis	pelagique	NA	NA	NA	0	0	0	120	0	18	0	0	0	0	0	0	0	0	0	ASUR	0	0	0	0	0	0	0	0	0
+Siluriformes	Loricariidae	Ancistrus	ancistrus aff. temminckii	benthique	NA	NA	NA	0	0	0	80	0	0.1818	0	0	0	0	0	0	0	0	0	ATEM AFF	0	0	0	1	1	1	1	1	1
+Characiformes	Hemiodontidae	Bivibranchia	bivibranchia bimaculata	benthique	NA	NA	NA	0	0	0	140	0	0.09090909090909091	0	0	0	0	0	0	0	0	0	BBIM	0	0	0	1	0	0	0	0	0
+Characiformes	Chilondontidae	Chilodus	chilodus zunevei	benthique	NA	NA	NA	0	0	0	90	0	0.36363636363636365	0	0	0	0	0	0	0	0	0	CZUN	0	0	0	1	0	0	0	0	1
+Gymnotiformes	Sternopygidae	Eigenmannia	eigenmannia virescens	benthique	NA	NA	NA	0	0	0	250	0	0.09090909090909091	0	0	0	0	0	0	0	0	0	EVIR	0	0	0	1	0	0	0	0	0
+Characiformes	Hemiodontidae	Hemiodus	hemiodus quadrimaculatus	pelagique	NA	NA	NA	0	0	0	150	0	4.090909090909091	0	0	0	0	0	0	0	0	0	HQUA	0	0	0	0	1	0	0	0	0
+Characiformes	Erythrinidae	Hoplias	hoplias malabaricus	pelagique	NA	NA	NA	0	0	0	200	0	0.09090909090909091	0	0	0	0	0	0	0	0	0	HMAL	0	0	0	1	0	0	0	0	0
+Characiformes	Anostomidae	Leporinus	leporinus gossei	pelagique	NA	NA	NA	0	0	0	210	0	0.36363636363636365	0	0	0	0	0	0	0	0	0	LGOS	0	0	0	0	1	0	0	0	0
+Characiformes	Anostomidae	Leporinus	leporinus granti	pelagique	NA	NA	NA	0	0	0	220	0	0.18181818181818182	0	0	0	0	0	0	0	0	0	LGRA	0	0	0	0	1	0	0	0	0
+Characiformes	Anostomidae	Leporinus	leporinus melanostictus	pelagique	NA	NA	NA	0	0	0	200	0	1.0909090909090908	0	0	0	0	0	0	0	0	0	LMEL	0	0	0	0	1	0	0	0	0
+Siluriformes	Loricariidae	Loricaria	loricaria cataphracta	benthique	NA	NA	NA	0	0	0	230	0	0.45454545454545453	0	0	0	0	0	0	0	0	0	LCAT	0	0	0	1	1	0	0	0	0
+Siluriformes	Loricariidae	Loricaria	loricaria gr. cataphracta	benthique	NA	NA	NA	0	0	0	230	0	0.555555555555556	0	0	0	0	0	0	0	0	0	LGCA	0	0	0	1	1	0	0	0	0
+Clupeiformes	Engraulidae	Lycengraulis	lycengraulis batesii	pelagique	NA	NA	NA	0	0	0	210	0	1.3636363636363635	0	0	0	0	0	0	0	0	0	LBAT	0	0	0	1	1	0	0	0	0
+Elopiformes	Megalopidae	Megalops	megalops atlanticus	pelagique	NA	NA	NA	0	0	0	550	0	0.18181818181818182	0	0	0	0	0	0	0	0	0	MATL	0	0	0	0	0	0	0	0	0
+Characiformes	Characidae	Moenkhausia	moenkhausia aff. Grandisquamis	pelagique	NA	NA	NA	0	0	0	110	0	4.545454545454546	0	0	0	0	0	0	0	0	0	MGRA2	0	0	0	1	0	0	0	0	0
+Siluriformes	Loricariidae	Peckoltia	peckoltia capitulata	benthique	NA	NA	NA	0	0	0	70	0	0.18181818181818182	0	0	0	0	0	0	0	0	0	PCAP	0	0	0	0	0	0	0	0	0
+Siluriformes	Heptapteridae	Pimelodella	pimelodella cristata	benthique	NA	NA	NA	0	0	0	150	0	0.09090909090909091	0	0	0	0	0	0	0	0	0	PCRI	0	0	0	0	1	0	0	0	0
+Siluriformes	Pimelodidae	Pimelodus	pimelodus blochii	benthique	NA	NA	NA	0	0	0	200	0	0.18181818181818182	0	0	0	0	0	0	0	0	0	PBLO	0	0	0	0	1	0	0	0	0
+Siluriformes	Pimelodidae	Pimelodus	pimelodus ornatus	benthique	NA	NA	NA	0	0	0	300	0	0.8181818181818182	0	0	0	0	0	0	0	0	0	PORN	0	0	0	0	1	0	0	0	0
+Clupeiformes	Engraulidae	Pterengraulis	pterengraulis atherinoides	pelagique	NA	NA	NA	0	0	0	200	0	1.9090909090909092	0	0	0	0	0	0	0	0	0	PATH	0	0	0	0	0	0	0	0	0
+Perciformes	Cichlidae	Satanoperca	satanoperca rhynchitis	mixte	NA	NA	NA	0	0	0	130	0	0.9090909090909091	0	0	0	0	0	0	0	0	0	SJUR	0	0	0	1	1	0	0	0	0
+Gymnotiformes	Sternopygidae	Sternopygus	sternopygus macrurus	benthique	NA	NA	NA	0	0	0	350	0	0.18181818181818182	0	0	0	0	0	0	0	0	0	SMAC	0	0	0	0	0	0	0	0	0
+Siluriformes	Auchenipteridae	Trachelyopterus	trachelyopterus galeatus	benthique	NA	NA	NA	0	0	0	180	0	0.45454545454545453	0	0	0	0	0	0	0	0	0	PGAL	0	0	0	0	1	0	0	0	0
+Beloniformes	Belonidae	Pseudotylosurus	Pseudotylosurus microps	pelagique	NA	NA	NA	0	0	0	400	0	0.0909	0	0	0	0	0	0	0	0	0	PMIC	0	0	0	0	1	0	0	0	0

@@ -1,0 +1,218 @@
+
+
+#librairies
+```{r include=FALSE}
+path <- getwd()
+library(ggplot2)
+library(tidyverse)
+library(VennDiagram)
+library(readxl)
+library(openxlsx)
+library(vegan)
+library(FactoMineR)
+
+```
+
+
+#données et on mets des code_taxon à tous le monde
+```{r}
+DCE_meta <- readRDS(paste0(path,"/data_metabarcoding_DCE.rds"))
+peche_meta <- readRDS(paste0(path,"/data_finale.rds"))
+technique_peche <- read_excel(paste0(path,"/technique_peche.xlsx"))
+colnames(technique_peche)[7] <- "technique_peche"
+
+#on donne des code aux espèces qui n'en n'ont pas 
+for(i in (1:length(DCE_meta$Ordre))) {
+  if (DCE_meta$Espece[i] == "bryconops aff. melanurus") {
+    DCE_meta$code_taxon[i] <- "AFFBRYME"
+  }
+  if (DCE_meta$Espece[i] == "gymnotus aff. coropinae") {
+    DCE_meta$code_taxon[i] <- "AFFGYMCO"
+  }
+  if (DCE_meta$Espece[i] == "eigenmannia cf. pavulagem") {
+    DCE_meta$code_taxon[i] <- "CFEIPA"
+  }
+  if (DCE_meta$Espece[i] == "pimelodella cf. parnahybae") {
+    DCE_meta$code_taxon[i] <- "CFPIPA"
+  }
+}
+
+
+for(i in (1:length(peche_meta$Ordre))){
+  
+  if(peche_meta$Espece[i] == "bryconops aff. melanurus"){peche_meta$code_taxon[i] <- "AFFBRYME"}
+   if(peche_meta$Espece[i] == "gymnotus aff. coropinae"){peche_meta$code_taxon[i] <- "AFFGYMCO"}
+   if(peche_meta$Espece[i] == "eigenmannia cf. pavulagem"){peche_meta$code_taxon[i] <- "CFEIPA"}
+  
+  
+ if(peche_meta$Espece[i] == "pimelodella cf. parnahybae"){peche_meta$code_taxon[i] <- "CFPIPA"}
+  }
+```
+
+
+
+
+on mets les bonne colonnes 
+```{r}
+colnames(DCE_meta)[14] <- "IA_DCE"
+DCE_meta$nbr_peche <- rep(0,length(DCE_meta$Ordre))
+peche_meta$IA_DCE <- rep(0,length(peche_meta$Ordre))
+DCE_meta <- DCE_meta %>% select(-reference)
+
+#on regarde si on a bien les meme noms de colonnes entre les deux bases de données
+setdiff(colnames(DCE_meta),colnames(peche_meta))
+setdiff(colnames(peche_meta),colnames(DCE_meta))
+
+#on joint les deux bases de données 
+
+
+```
+
+
+
+```{r}
+
+# Convertir les colonnes en numériques
+peche_meta$poids <- as.numeric(peche_meta$poids)
+DCE_meta$poids <- as.numeric(DCE_meta$poids)
+peche_meta$POO_CO1 <- as.numeric(peche_meta$POO_CO1)
+DCE_meta$POO_CO1 <- as.numeric(DCE_meta$POO_CO1)
+peche_meta$POO_teleo <- as.numeric(peche_meta$POO_teleo)
+DCE_meta$POO_teleo <- as.numeric(DCE_meta$POO_teleo)
+peche_meta$POO_MiFish <- as.numeric(peche_meta$POO_MiFish)
+DCE_meta$POO_MiFish <- as.numeric(DCE_meta$POO_MiFish)
+peche_meta$RRA_CO1 <- as.numeric(peche_meta$RRA_CO1)
+DCE_meta$RRA_CO1 <- as.numeric(DCE_meta$RRA_CO1)
+peche_meta$RRA_teleo <- as.numeric(peche_meta$RRA_teleo)
+DCE_meta$RRA_teleo <- as.numeric(DCE_meta$RRA_teleo)
+peche_meta$RRA_MiFish <- as.numeric(peche_meta$RRA_MiFish)
+DCE_meta$RRA_MiFish <- as.numeric(DCE_meta$RRA_MiFish)
+peche_meta$mean_RRA <- as.numeric(peche_meta$mean_RRA)
+DCE_meta$mean_RRA <- as.numeric(DCE_meta$mean_RRA)
+peche_meta$nbr_marqueur <- as.numeric(peche_meta$nbr_marqueur)
+DCE_meta$nbr_marqueur <- as.numeric(DCE_meta$nbr_marqueur)
+peche_meta$metabarcoding <- as.numeric(peche_meta$metabarcoding)
+DCE_meta$metabarcoding <- as.numeric(DCE_meta$metabarcoding)
+peche_meta$IA_DCE <- as.numeric(peche_meta$IA_DCE)
+DCE_meta$IA_DCE <- as.numeric(DCE_meta$IA_DCE)
+peche_meta$nbr_peche <- as.numeric(peche_meta$nbr_peche)
+DCE_meta$nbr_peche <- as.numeric(DCE_meta$nbr_peche)
+
+# jointure
+resultat <- full_join(peche_meta, DCE_meta, by = "code_taxon")
+
+# resultat <- resultat %>%  select(c(nbr_peche.x,nbr_peche.y,IA_DCE.x,IA_DCE.y,Espece.x,Espece.y))
+
+resultat$nbr_peche.x[is.na(resultat$nbr_peche.x)] <- 0
+resultat$nbr_peche.y[is.na(resultat$nbr_peche.y)] <- 0
+resultat$IA_DCE.x[is.na(resultat$IA_DCE.x)] <- 0
+resultat$IA_DCE.y[is.na(resultat$IA_DCE.y)] <- 0
+
+
+resultat <- resultat %>%
+  mutate(
+    Ordre = coalesce(Ordre.x, Ordre.y),
+    Famille = coalesce(Famille.x, Famille.y),
+    Genre = coalesce(Genre.x, Genre.y),
+    Espece = coalesce(Espece.x, Espece.y),
+    hauteur_eau = coalesce(hauteur_eau.x, hauteur_eau.y),
+    similitude_CO1 = coalesce(similitude_CO1.x, similitude_CO1.y),
+    similitude_teleo = coalesce(similitude_teleo.x, similitude_teleo.y),
+    similitude_MiFish = coalesce(similitude_MiFish.x, similitude_MiFish.y),
+    nbr_CS_CO1 = coalesce(nbr_CS_CO1.x, nbr_CS_CO1.y),
+    nbr_CS_teleo = coalesce(nbr_CS_teleo.x, nbr_CS_teleo.y),
+    nbr_CS_MiFish = coalesce(nbr_CS_MiFish.x, nbr_CS_MiFish.y),
+    taille = coalesce(taille.x, taille.y),
+    poids = coalesce(poids.x, poids.y),
+    POO_CO1 = coalesce(POO_CO1.x, POO_CO1.y),
+    POO_teleo = coalesce(POO_teleo.x, POO_teleo.y),
+    POO_MiFish = coalesce(POO_MiFish.x, POO_MiFish.y),
+    RRA_CO1 = coalesce(RRA_CO1.x, RRA_CO1.y),
+    RRA_teleo = coalesce(RRA_teleo.x, RRA_teleo.y),
+    RRA_MiFish = coalesce(RRA_MiFish.x, RRA_MiFish.y),
+    mean_RRA = coalesce(mean_RRA.x, mean_RRA.y),
+    nbr_marqueur = coalesce(nbr_marqueur.x, nbr_marqueur.y),
+    metabarcoding = coalesce(metabarcoding.x, metabarcoding.y),
+    ref_CO1 = coalesce(ref_CO1.x, ref_CO1.y),
+    ref_teleo = coalesce(ref_teleo.x, ref_teleo.y),
+    ref_MiFish = coalesce(ref_MiFish.x, ref_MiFish.y),
+    crique = coalesce(crique.x, crique.y),
+    fleuve = coalesce(fleuve.x, fleuve.y),
+    estuaire = coalesce(estuaire.x, estuaire.y),
+    saut = coalesce(saut.x, saut.y),
+    berge = coalesce(berge.x, berge.y),
+    marais = coalesce(marais.x, marais.y)
+    # nbr_peche = max(nbr_peche.x, nbr_peche.y),
+    # IA_DCE = max(IA_DCE.x, IA_DCE.y)
+  ) %>%
+  select(code_taxon, Ordre, Famille, Genre, Espece, hauteur_eau, similitude_CO1, similitude_teleo, similitude_MiFish,
+         nbr_CS_CO1, nbr_CS_teleo, nbr_CS_MiFish, taille, poids, POO_CO1, POO_teleo, POO_MiFish, RRA_CO1, RRA_teleo,
+         RRA_MiFish, mean_RRA, nbr_marqueur, metabarcoding, ref_CO1, ref_teleo, ref_MiFish, crique, fleuve, estuaire,
+         saut, berge, marais, nbr_peche.x,nbr_peche.y, IA_DCE.x,IA_DCE.y) %>%
+  distinct()
+
+resultat <- resultat %>% select(-c(nbr_peche.y,IA_DCE.x))
+
+colnames(resultat)[33] <- "nbr_peche"
+colnames(resultat)[34] <- "IA_DCE"
+
+resultat$metabarcoding <- resultat$metabarcoding - 1
+resultat$nbr_marqueur <- resultat$nbr_marqueur - 1
+resultat$metabarcoding[resultat$metabarcoding == -1] <- 0
+resultat$nbr_marqueur[resultat$nbr_marqueur == -1] <- 0
+
+```
+
+
+#on rajoute la technique de peche 
+```{r}
+resultat$technique_peche <- rep("",length(resultat$Ordre))
+for(i in (1:length(resultat$Ordre))){
+  index <- which(technique_peche$code_taxon == resultat$code_taxon[i])
+  if(length(index)>0){
+  resultat$technique_peche[i] <- technique_peche$technique_peche[index]}
+}
+resultat$DCE <- rep(0,length(resultat$code_taxon))
+resultat$peche <- rep(0,length(resultat$code_taxon))
+for(i in (1:length(resultat$code_taxon))){
+  if(resultat$nbr_peche[i]>0){
+    resultat$peche[i] <- 1
+  }
+  if(resultat$IA_DCE[i]>0){
+    resultat$DCE[i] <- 1
+  }
+}
+
+
+```
+
+on separe les colonnes techniques de peche 
+```{r}
+resultat <- resultat %>% mutate(filet = rep(0,length(resultat$code_taxon)),nasse = rep(0,length(resultat$code_taxon)),epervier = rep(0,length(resultat$code_taxon)),epuisette = rep(0,length(resultat$code_taxon)),trapes = rep(0,length(resultat$code_taxon)),ligne = rep(0,length(resultat$code_taxon)))
+
+for(i in (1:length(resultat$code_taxon))){
+  if (grepl("filet", resultat$technique_peche[i])){
+    resultat$filet[i] <- 1
+  }
+  if (grepl("pervier", resultat$technique_peche[i])){
+    resultat$epervier[i] <- 1
+  }
+  if (grepl("nasse", resultat$technique_peche[i])){
+    resultat$nasse[i] <- 1
+  }
+  if (grepl("trape", resultat$technique_peche[i])){
+    resultat$trapes[i] <- 1
+  }
+  if (grepl("peche ", resultat$technique_peche[i])){
+    resultat$ligne[i] <- 1
+  }
+  if (grepl("puisette", resultat$technique_peche[i])){
+    resultat$epuisette[i] <- 1
+  }
+}
+
+resultat <- resultat %>% select(-technique_peche)
+
+# write.xlsx(resultat,paste0(path,"/data_1_07.rds"))
+```
+

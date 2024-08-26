@@ -1,0 +1,405 @@
+
+#libraires
+```{r include=FALSE}
+library(ggplot2)
+library(tidyverse)
+library(VennDiagram)
+library(readxl)
+library(openxlsx)
+library(vegan)
+library(FactoMineR)
+library(readxl)
+
+path <- getwd()
+```
+
+
+#base de données 
+```{r}
+#données de metabarcoding et de pêche 
+# data <- readRDS(paste0(path,"/data_finale.rds"))
+data <- read_excel(paste0(path,"/data_1_07.rds"))
+data$Espece <- tolower(data$Espece)
+
+#on charge les données DCE
+athanase <- read_excel(paste0(path,"/DCE/athanase.xlsx"))
+colonis <- read_excel(paste0(path,"/DCE/colonis.xlsx"))
+mathias <- read_excel(paste0(path,"/DCE/mathias.xlsx"))
+
+athanase <- cbind(athanase,station = rep("athanase",length(athanase$Espece)))
+colonis <- cbind(colonis,station = rep("colonis",length(colonis$Espece)))
+mathias <- cbind(mathias,station = rep("mathias",length(mathias$Espece)))
+
+# DCE <- rbind(athanase,colonis,mathias)
+DCE <- athanase
+
+DCER <- read_excel(paste0(path,"/DCE_Regis.xlsx"))
+#on ne garde que l'athanase car bien plus de données mais on mets bien en forme comme la DCE precedente 
+DCER <- DCER %>%  filter(Station == "Athanase")
+DCER <- DCER %>% select(c(Date,`Genre Espèce`,Code,Station))
+DCER <- DCER %>% mutate(Date_capture = as.POSIXct(Date,format = "%Y-%m-%d"),Year = year(Date))
+DCE <- DCER %>% 
+  group_by(`Genre Espèce`, Year) %>% 
+  summarise(total_capture = n(),
+            code_taxon = (Code), .groups = 'drop')  # Utilisation de .groups pour éviter des avertissements
+
+colnames(DCE)[1] <- "Espece"
+DCE <- DCE %>% filter(Espece != "Characidae sp")
+
+
+```
+
+
+
+#on calcule la moyenne du nombre d'individu peche par espèce par an (IA) et on regarde les courbes de rarefactions du site DCE ainsi que le nombre d'espèces différentes péchées chaques années 
+```{r eval=FALSE, include=FALSE}
+# saveRDS(DCE,paste0(path,"/DCE_athanase.rds"))
+athanase <- DCE
+sort(unique(athanase$Year))
+# athanase <- athanase %>% filter(Year>=2014)
+all_years <- unique(athanase$Year)
+colnames(athanase)[1] <- "Espece"
+
+
+# Créer un dataframe avec toutes les combinaisons d'espèces et d'années
+species_years <- expand.grid(Espece = unique(athanase$Espece), Year = all_years)
+
+# Joindre le dataframe original pour obtenir les captures
+complete_data <- species_years %>%
+  left_join(athanase %>%
+              group_by(Espece, Year) %>%
+              summarise(total_capture = sum(total_capture, na.rm = TRUE), .groups = 'drop'),
+            by = c("Espece", "Year"))
+
+# Remplacer les valeurs NA par 0 pour les captures manquantes
+complete_data$total_capture[is.na(complete_data$total_capture)] <- 0
+
+mean_individuals_per_year <- complete_data %>%
+  group_by(Espece) %>%
+  summarise(mean_capture_per_year = mean(total_capture))
+
+mean_individuals_per_year$code_taxon <- rep("",length(mean_individuals_per_year$Espece))
+
+for(i in (1:length(mean_individuals_per_year$Espece))){
+  print(i)
+  index <- which(DCE$Espece == mean_individuals_per_year$Espece[i])[1]
+  mean_individuals_per_year$code_taxon[i] <- DCE$code_taxon[index]###########
+}
+
+complete_data <- complete_data %>% filter(total_capture>0)
+
+species_count_per_year <- complete_data %>%
+  group_by(Year) %>%
+  summarise(species_count = n_distinct(Espece))
+
+
+ajout_2016 <- as.data.frame(cbind(Year = c(2016,2018,2019,2021), species_count = c(0,0,0,0)))
+species_count_per_year <- rbind(species_count_per_year,ajout_2016)
+species_count_per_year$Year <- as.factor(species_count_per_year$Year)
+# nombre d'espèce unique capturées par an
+ggplot(species_count_per_year, aes(x = Year, y = species_count)) +
+  geom_line(color = "blue", size = 1) +
+  geom_point(color = "red", size = 3) +
+  ggtitle("Number of Different Species Captured Each Year") +
+  xlab("Year") +
+  ylab("Number of Different Species") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 20, face = "bold", hjust = 0.5),
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14),
+    panel.grid.major = element_line(color = "gray", size = 0.5),
+    panel.grid.minor = element_blank()
+  )
+
+
+
+presence_absence_matrix <- complete_data %>%
+  select(Espece, Year) %>%
+  mutate(presence = 1) %>%
+  pivot_wider(names_from = Year, values_from = presence, values_fill = list(presence = 0)) %>%
+  column_to_rownames(var = "Espece")
+
+
+# rarefaction_curve <- rarecurve(presence_absence_matrix, step = 1, sample = min(rowSums(presence_absence_matrix)))
+presence_absence_matrix <- t(presence_absence_matrix)
+accum <- specaccum(presence_absence_matrix, method = "random")
+
+plot(accum, 
+     main = "Rarefaction Curve", 
+     xlab = "Number of Years", 
+     ylab = "Species Richness",
+     # type = "l",               # Use lines
+     col = "blue",             # Set the line color to blue
+     lwd = 2,                  # Increase line width
+     cex.axis = 1.2,           # Increase axis label size
+     cex.lab = 1.5,            # Increase axis title size
+     cex.main = 1.5            # Increase main title size
+)
+
+# Adding grid lines for better readability
+grid()
+
+# Adding a legend (if necessary)
+legend("bottomright", legend = "spcecies discovered", col = "blue", lwd = 2, cex = 1.2)
+
+test <- 0
+mean_individuals_per_year$trouver <- rep(0,length(mean_individuals_per_year$Espece))
+for(i in(1:length(data$Ordre))){
+  index <- which(mean_individuals_per_year$code_taxon == data$code_taxon[i])
+  if(length(index)>0){
+    data$nbr_peche[i] <- mean_individuals_per_year$mean_capture_per_year[index]
+    test <- test + 1
+    mean_individuals_per_year$trouver[index] <- 1
+  }
+}
+
+
+# write_excel_csv(data,paste0(path,"/complete_ca_baba.csv"))
+
+```
+
+
+# on recherche si les espèces non détectées au metabarcoding sont dans les bases de références ou non 
+```{r}
+reference <- read_excel(paste0(path,"/liste_assignation/liste_assignation.xlsx"))
+reference$CO1 <- tolower(reference$CO1)
+reference$teleo <- tolower(reference$teleo)
+reference$MiFish <- tolower(reference$MiFish)
+
+for(i in (1:length(data$Ordre))){
+  if(data$Espece[i] %in% reference$CO1){data$ref_CO1[i] <- 1}
+   if(data$Espece[i] %in% reference$teleo){data$ref_teleo[i] <- 1}
+   if(data$Espece[i] %in% reference$MiFish){data$ref_MiFish[i] <- 1}
+}
+
+data$reference <- rep(1,length(data$Ordre))
+for(i in (1:length(data$Ordre))){
+  if(data$ref_CO1[i] == 0 & data$ref_MiFish[i] ==0 & data$ref_teleo[i] == 0){
+    data$reference[i] <- 0
+  }
+}
+
+```
+
+
+
+
+diagramme de Venn pour les genres 
+```{r eval=FALSE, include=FALSE}
+metabarcoding_genera <- unique(data$Genre[data$metabarcoding == 1])
+fishing_genera <- unique(data$Genre[data$nbr_peche > 0])
+co1_genera <- unique(data$Genre[data$POO_CO1 > 0])
+teleo_genera <- unique(data$Genre[data$POO_teleo > 0])
+mifish_genera <- unique(data$Genre[data$POO_MiFish > 0])
+
+colors <- c("skyblue", "lightgreen","purple3")
+venn.plot <- venn.diagram(
+  x = list(teleo = teleo_genera, CO1 = co1_genera, MiFish = mifish_genera),
+  category.names = c("Teleo", "CO1", "MiFish"),
+  filename = NULL,
+   fill = colors,  
+  # cat.col = colors,  
+  cat.fontface = "bold",  
+  margin = 0.05 
+
+)
+
+colors <- c("skyblue", "lightgreen")
+
+venn.plot <- venn.diagram(
+  x = list(traditional_methods = fishing_genera, metabarcoding = metabarcoding_genera),
+  category.names = c("Traditional Methods", "Metabarcoding"),
+  filename = NULL,
+  fill = colors,  
+  # cat.col = colors,  
+  cat.fontface = "bold",  
+  margin = 0.05 
+)
+
+
+```
+
+
+```{r eval=FALSE, include=FALSE}
+setdiff(teleo_genera,mifish_genera)
+setdiff(mifish_genera,teleo_genera)
+setdiff(metabarcoding_genera,fishing_genera)
+setdiff(fishing_genera,metabarcoding_genera)
+```
+
+
+taille selon les méthodes
+```{r}
+
+#on exclue les espèces communes aux deux methodes de peche
+data_filtered <- data %>%
+  filter((metabarcoding == 1 & nbr_peche == 0) | (metabarcoding == 0 & nbr_peche > 0))
+
+#on vire les espèces non presentent dans la base de données de référence
+data_filtered <- data_filtered %>%  filter(reference == 1)
+
+#on selectionne les colonnes interessantes
+taille_metabarcoding <- data_filtered %>% filter(metabarcoding == 1) %>% pull(taille) 
+taille_peche <- data_filtered %>% filter(nbr_peche >0) %>%  pull(taille)
+
+boxplot(taille_metabarcoding, taille_peche,
+        main=("body length comparison between the two detection methods"),
+        names = c("Metabarcoding", "traditionnal methods"),
+        ylab = "body length",
+        col = c("lightblue", "lightgreen"))
+
+```
+
+espèce par marqueurs
+```{r}
+espèces_teleo <- data %>% filter( !is.na(  similitude_teleo ) ) %>% count()
+espèces_MiFish <- data %>% filter(!is.na(similitude_MiFish)) %>% count()
+espèces_CO1 <- data %>% filter(!is.na(similitude_CO1)) %>% count()
+```
+
+
+
+analyse rapide pour les publis
+```{r eval=FALSE, include=FALSE}
+#MiFIsh
+nbr_motus_MiFIsh <- 312
+nbr_genre_MiFIsh <- 42
+nbr_famille_MiFIsh <- 19
+nbr_taxon_au_genre_MiFIsh <- 4
+nbr_taxon_famille_MiFIsh <- 0
+sd_asv_par_taxon_MiFIsh <- 8.55
+mean_avs_par_taxon_MiFIsh <- 5.37
+
+#teleo
+nbr_motus_teleo <- 431
+nbr_genre_teleo <- 43
+nbr_famille_teleo <- 20
+nbr_taxon_au_genre_teleo <- 7
+nbr_taxon_famille_teleo <- 1
+sd_asv_par_taxon_teleo <- 6.84
+mean_avs_par_taxon_teleo <- 13.9
+
+#CO1
+nbr_motus_CO1 <- 58
+nbr_genre_CO1 <- 33
+nbr_famille_CO1 <- 17
+nbr_taxon_au_genre_CO1 <- 2
+nbr_taxon_famille_CO1 <- 1
+sd_asv_par_taxon_CO1 <- 1.34
+mean_avs_par_taxon_CO1 <- 0.68
+
+
+library(knitr)
+library(kableExtra)
+
+data <- data.frame(
+  Metric = c("Number of ASVs","Number of Species", "Number of Genera", "Number of Families", "Number of taxa identified at genus level", 
+             "Number of taxa identified at genus level", "SD ASVs per Taxon", "Mean ASVs per Taxon"),
+  MiFish = c(312,59, 42, 19, 4, 0, 8.55, 5.37),
+  Teleo = c(431, 62,43, 20, 7, 1, 6.84, 13.9),
+  CO1 = c(58,40, 33, 17, 2, 1, 1.34, 0.68)
+)
+
+# Créer le tableau avec kableExtra
+kable(data, "html", col.names = c("Metric", "MiFish", "Teleo", "CO1"), align = c('l', 'r', 'r', 'r')) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = F) %>%
+  column_spec(1, bold = TRUE)
+
+```
+
+
+modele glm pour voir si la taille influe significativement les probab d'être detecté par metabarcoding 
+```{r eval=FALSE, include=FALSE}
+data_tri <- data %>% filter(reference == 1)
+model <- glm(metabarcoding ~ taille, data = data_tri, family = binomial)
+
+# Résumé du modèle
+summary(model)
+coefficients <- coef(summary(model))
+```
+
+#on regarde quelles sont les dependances significatives entres les différentes variables de notre jeu de données 
+```{r}
+#on exclue les espèces communes aux deux methodes de peche
+data_filtered <- data %>%
+  filter((metabarcoding == 1 & nbr_peche == 0) | (metabarcoding == 0 & nbr_peche > 0))
+
+#on vire les espèces non presentent dans la base de données de référence
+data_filtered <- data_filtered %>%  filter(reference == 1)
+
+#on met en forme les différentes colonnes et on supprime celles qui sont sans interet 
+data_filtered$hauteur_eau <- as.factor(data_filtered$hauteur_eau)
+data_filtered$nbr_marqueur <- as.factor(data_filtered$nbr_marqueur)
+data_filtered$crique <- as.factor(data_filtered$crique)
+data_filtered$fleuve <- as.factor(data_filtered$fleuve)
+data_filtered$saut <- as.factor(data_filtered$saut)
+data_filtered$marais <- as.factor(data_filtered$marais)
+data_filtered$berge <- as.factor(data_filtered$berge)
+data_filtered$estuaire <- as.factor(data_filtered$estuaire)
+data_filtered <- data_filtered %>% select(-c(ref_CO1,ref_teleo,ref_MiFish,reference,similitude_CO1,similitude_teleo,similitude_MiFish,Ordre,Famille,Genre,poids,code_taxon,Espece))
+
+# data_filtered$nbr_peche[data_filtered$nbr_peche == 0] <- NA
+
+for(i in (1:length(data_filtered$hauteur_eau) ) ){
+  if(data_filtered$metabarcoding[i] == "0"){data_filtered$metabarcoding[i] <- "non detecté"}
+  if(data_filtered$metabarcoding[i] == "1"){data_filtered$metabarcoding[i] <- "detecté"}
+}
+
+data_filtered$metabarcoding <- as.factor(data_filtered$metabarcoding)
+
+
+summary(data_filtered)
+
+```
+analyse 
+```{r}
+
+catdes(data_filtered,num.var = 15)
+summary(lm(mean_RRA ~ taille * nbr_peche,data=data_filtered))
+
+summary(lm(RRA_MiFish ~ POO_MiFish,data=data))
+# plot(x=data_filtered)
+```
+
+
+relation entre mean_RRA et nbr_peche et taille
+```{r}
+#on ne regarde que les individus qui ont été péchés et ceux qui ont été retrouvés par metabarcoding 
+dat <- data %>% filter(metabarcoding==1 & nbr_peche>0)
+dat <- dat %>%  select(c(mean_RRA,nbr_peche,taille,hauteur_eau,RRA_teleo,RRA_MiFish,Espece))
+dat$nbr_peche <- round(as.numeric(dat$nbr_peche),2)
+dat$mean_RRA <- as.numeric(dat$mean_RRA)
+dat$RRA_MiFish <- as.numeric(dat$RRA_MiFish)
+dat$RRA_teleo <- as.numeric(dat$RRA_teleo)
+
+dat$nbr_peche <- 1/(1+exp(dat$nbr_peche))
+model <- lm(mean_RRA ~ taille * nbr_peche, data = dat)
+summary(model)
+
+dat$mean_12S <- rep(0,length(dat$mean_RRA))
+dat$nbr_individu_peche_DCE <- rep(0,length(dat$mean_RRA))
+DCE$Espece <- tolower(DCE$Espece)
+
+for( i in (1:length(dat$mean_RRA))){
+  dat$mean_12S[i] <- (dat$RRA_teleo[i] + dat$RRA_MiFish[i])/2
+  dat$nbr_individu_peche_DCE[i] <- DCE %>% filter(Espece == dat$Espece[i]) %>% pull(total_capture) %>% sum()
+}
+
+dat <- dat %>%  filter(nbr_individu_peche_DCE>10)
+
+dat$taille_nbr_peche <- dat$taille * dat$nbr_peche
+model <- lm(mean_12S ~ taille_nbr_peche, data = dat)
+
+r_squared <- summary(model)$r.squared
+
+
+plot(dat$taille_nbr_peche, dat$mean_RRA, 
+     xlab = "taille * nbr_peche", 
+     ylab = "mean_RRA", 
+     main = paste("Linear Regression\n R² =", round(r_squared, 3)))
+abline(model, col = "blue")
+legend("topright", legend = paste("R² =", round(r_squared, 3)), bty = "n")
+
+```
+

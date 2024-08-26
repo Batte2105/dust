@@ -1,0 +1,736 @@
+
+#librairies
+```{r include=FALSE}
+path <- getwd()
+library(ggplot2)
+library(tidyverse)
+library(VennDiagram)
+library(readxl)
+library(openxlsx)
+library(vegan)
+library(FactoMineR)
+```
+
+
+données
+```{r}
+# data <- read_excel(paste0(path,"/data_1_07.rds"))
+# write.xlsx(data,file=paste0(path,"/daaaata.xlsx"))
+data <- read_excel(paste0(path,"/daaaata.xlsx"))
+
+espece_meta_pas_pechees <- data %>% filter(metabarcoding == 1, peche == 0) %>% pull(Espece)
+espece_meta_pechees <- data %>% filter(metabarcoding == 1, peche == 1) %>% pull(Espece)
+
+max_length <- max(length(espece_meta_pas_pechees), length(espece_meta_pechees))
+espece_meta_pas_pechees <- c(espece_meta_pas_pechees, rep(NA, max_length - length(espece_meta_pas_pechees)))
+espece_meta_pechees <- c(espece_meta_pechees, rep(NA, max_length - length(espece_meta_pechees)))
+
+df <- data.frame(
+  espece_meta_pas_pechees = espece_meta_pas_pechees,
+  espece_meta_pechees = espece_meta_pechees
+)
+# write.xlsx(df, file = paste0(path,"/espece_meta.xlsx"))
+# data <- data %>% filter(metabarcoding == 1 & nbr_marqueur==3)
+```
+
+
+on rajoute les IA_DCE avec un nombre d'année souhaité
+```{r}
+nombre_annee_a_prendre <-1
+
+athanase <- readRDS(paste0(path,"/DCE_athanase.rds"))
+
+athanase <- distinct(athanase)
+liste_annee <- sort(unique(athanase$Year))
+n_year <- length(liste_annee)
+limite <- liste_annee[n_year - nombre_annee_a_prendre]
+athanase <- athanase %>% filter(Year>limite)
+all_years <- unique(athanase$Year)
+colnames(athanase)[1] <- "Espece"
+
+
+
+species_years <- expand.grid(Espece = unique(athanase$Espece), Year = all_years)
+
+
+complete_data <- species_years %>%
+  left_join(athanase %>%
+              group_by(Espece, Year) %>%
+              summarise(total_capture = sum(total_capture, na.rm = TRUE), .groups = 'drop'),
+            by = c("Espece", "Year"))
+
+
+complete_data$total_capture[is.na(complete_data$total_capture)] <- 0
+
+mean_individuals_per_year <- complete_data %>%
+  group_by(Espece) %>%
+  summarise(mean_capture_per_year = mean(total_capture))
+
+mean_individuals_per_year$code_taxon <- rep("",length(mean_individuals_per_year$Espece))
+mean_individuals_per_year$tot_capt <- rep(0,length(mean_individuals_per_year$Espece))
+mean_individuals_per_year$rec <- rep(0,length(mean_individuals_per_year$Espece))
+
+daat <- complete_data %>%  filter(total_capture!=0)
+
+for(i in (1:length(mean_individuals_per_year$Espece))){
+  index <- which(athanase$Espece == mean_individuals_per_year$Espece[i])[1]
+  mean_individuals_per_year$code_taxon[i] <- athanase$code_taxon[index]
+  dd <- complete_data %>%  filter(Espece == mean_individuals_per_year$Espece[i])
+  mean_individuals_per_year$tot_capt[i] <- sum(dd$total_capture)
+  pour_rec <- daat %>% filter(Espece==mean_individuals_per_year$Espece[i])
+  mean_individuals_per_year$rec[i] <- length(pour_rec$Espece)
+  
+}
+
+
+data$IA_DCE <- rep(0,length(data$IA_DCE))
+data$rec_DCE <- rep(0,length(data$IA_DCE))
+data$nbr_capt_DCE <- rep(0,length(data$IA_DCE))
+
+for(i in (1:length(data$code_taxon))){
+  index <- which(mean_individuals_per_year$code_taxon == data$code_taxon[i])
+  if(length(index)>0){
+    data$IA_DCE[i] <- mean_individuals_per_year$mean_capture_per_year[index]
+    data$nbr_capt_DCE[i] <- mean_individuals_per_year$tot_capt[index]
+    data$rec_DCE[i] <- mean_individuals_per_year$rec[index]
+
+  }
+      if(data$IA_DCE[i]==0){
+      data$DCE[i] <- 0
+    }
+    else{data$DCE[i] <- 1}
+}
+
+```
+
+
+diffrences recurrence et espèce que metabarcoding
+```{r eval=FALSE, include=FALSE}
+data <- data %>% filter(ref_CO1+ref_teleo+ref_MiFish>0)
+p <- table(data$rec_DCE,data$metabarcoding)
+
+rarete <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+non_detectees <- c(4, 4, 1, 2, 3, 2, 0, 1, 0, 0)
+detectees <- c(4, 1, 2, 4, 1, 3, 4, 3, 3, 4)
+
+# Calcul de la proportion d'espèces détectées
+proportion_detectee <- detectees / (non_detectees + detectees)
+
+# Création de l'histogramme
+barplot(proportion_detectee, 
+        names.arg = rarete, 
+        col = "skyblue", 
+  xlab = "Rarity of Species (Number of Times Detected Over 10 Years)", 
+        ylab = "Proportion of Species Detected by Metabarcoding", 
+        main = "Proportion of Species Detected by Metabarcoding by Rarity",
+        ylim = c(0, 1))
+
+# Ajouter une grille
+grid(nx = NA, ny = NULL, col = "gray", lty = "dashed", lwd = 0.5)
+
+spearman_test <- cor.test(rarete, proportion_detectee, method = "spearman")
+
+# Affichage des résultats
+print(spearman_test)
+```
+espèce detectée par metabarcoding et nombre de fois capturés
+```{r eval=FALSE, include=FALSE}
+capture_tot <- read.csv(paste0(path,"/total_capture_App_toutes_missions.csv"))
+
+data$nbr_capture_app <- rep(0,length(data$code_taxon))
+for(i in (1:length(data$code_taxon))){
+  index <- which(data$Espece[i] == capture_tot$nomtaxon)
+  if(length(index >0)){
+    data$nbr_capture_app[i] <- capture_tot$count[index]
+
+  }
+}
+
+data <- data %>% select(nbr_capture_app,metabarcoding,Espece)
+data <- data %>%  filter(nbr_capture_app!=0)
+plot(x=data$nbr_capture_app,y=data$metabarcoding)
+
+df <- data %>%
+  mutate(capture_group = ntile(nbr_capture_app, 10))
+
+df_summary <- df %>%
+  group_by(capture_group) %>%
+  summarise(
+    total_species = n(),
+    detected_species = sum(metabarcoding),
+    proportion_detected = detected_species / total_species,
+    avg_nbr_capture = mean(nbr_capture_app)
+  )
+
+ggplot(df_summary, aes(x = factor(capture_group), y = proportion_detected)) +
+  geom_bar(stat = "identity", fill = "#2C3E50", color = "black", width = 0.7) +  # Utilisation de couleurs harmonieuses
+  geom_text(aes(label = scales::percent(proportion_detected, accuracy = 0.1)), 
+            vjust = -0.5, size = 3.5, color = "black", fontface = "bold") +  # Ajouter les labels avec pourcentage
+  labs(
+   
+    x = "Abundance Groups (Deciles)",
+    y = "Proportion Detected by Metabarcoding"
+  ) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +  # Format de l'axe y en pourcentage
+  theme_minimal(base_size = 14) +  # Thème minimal avec une taille de base plus grande pour la publication
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),  # Centrer et agrandir le titre
+    axis.title.x = element_text(face = "bold", margin = margin(t = 10)),
+    axis.title.y = element_text(face = "bold", margin = margin(r = 10)),
+    axis.text.x = element_text(angle = 45, hjust = 1),  # Incliner les labels de l'axe x pour la lisibilité
+    panel.grid.major = element_line(color = "grey80"),  # Lignes de grille pour une meilleure lisibilité
+    panel.grid.minor = element_blank(),  # Supprimer les lignes de grille mineures
+    panel.border = element_rect(color = "black", fill = NA, size = 1)  # Ajouter une bordure autour du graphique
+  )
+```
+
+
+diagramme de Venn pour les marqueurs
+```{r eval=FALSE, include=FALSE}
+data$similitude_CO1 <- as.numeric(data$similitude_CO1)
+data$similitude_MiFish <- as.numeric(data$similitude_MiFish)
+data$similitude_teleo <- as.numeric(data$similitude_teleo)
+
+
+especes_CO1 <- data %>% filter(!is.na(similitude_CO1)) %>%    filter(similitude_CO1>0.96) %>% pull(Espece)
+especes_teleo <- data %>% filter(similitude_teleo>0.96 & !is.na(similitude_teleo)) %>% pull(Espece)
+especes_MiFish <- data %>% filter(similitude_MiFish>0.96 & !is.na(similitude_MiFish)) %>% pull(Espece)
+
+d <- data %>% filter(DCE == 1)
+length(unique(d$Famille))
+
+venn_data <- list(
+  "MiFish" = especes_MiFish,
+  "teleo" = especes_teleo,
+  "CO1" = especes_CO1
+)
+
+
+venn.plot <- venn.diagram(
+  x = venn_data,
+  category.names = c("MiFish", "teleo", "CO1"),
+  filename = NULL,
+  output = TRUE,
+  imagetype = "png",
+  height = 3000,
+  width = 3000,
+  resolution = 300,
+  compression = "lzw",
+  lwd = 2,
+  fill = c("#66c2a5", "#fc8d62", "#8da0cb"),
+  cex = 2,
+  fontface = "bold",
+  fontfamily = "sans",
+  cat.cex = 2,
+  cat.fontface = "bold",
+  cat.default.pos = "outer",
+  cat.pos = c(-20, 20, 0),
+  cat.dist = c(0.05, 0.05, 0.01),
+  cat.fontfamily = "sans",
+  rotation = 1
+)
+
+```
+
+
+diagramme de Venn pour les espèces 
+```{r eval=FALSE, include=FALSE}
+especes_DCE <- data %>% filter(DCE==1) %>% pull(Espece)
+espece_metabarcoding <- data %>% filter(metabarcoding==1) %>% pull(Espece)sc
+espece_peche_traditionnelle <- data %>% filter(nbr_peche>0) %>% pull(Espece)
+
+d <- data %>% filter(DCE == 1)
+length(unique(d$Famille))
+
+venn_data <- list(
+  "DCE" = especes_DCE,
+  "Metabarcoding" = espece_metabarcoding,
+  "Peche Traditionnelle" = espece_peche_traditionnelle
+)
+
+
+venn.plot <- venn.diagram(
+  x = venn_data,
+  category.names = c("DCE", "Metabarcoding", "Traditionnal methods"),
+  filename = NULL,
+  output = TRUE,
+  imagetype = "png",
+  height = 3000,
+  width = 3000,
+  resolution = 300,
+  compression = "lzw",
+  lwd = 2,
+  fill = c("#66c2a5", "#fc8d62", "#8da0cb"),
+  cex = 2,
+  fontface = "bold",
+  fontfamily = "sans",
+  cat.cex = 2,
+  cat.fontface = "bold",
+  cat.default.pos = "outer",
+  cat.pos = c(-20, 20, 0),
+  cat.dist = c(0.05, 0.05, 0.01),
+  cat.fontfamily = "sans",
+  rotation = 1
+)
+
+```
+pie chart pour les techniques de peche sur l'Approuague
+```{r eval=FALSE, include=FALSE}
+dat_pie <- data %>% filter(peche >0)
+dat_pie <- dat_pie %>% select(c(Espece,filet,nasse,epuisette,trapes,ligne,epervier))
+
+captures <- colSums(dat_pie[, -1])
+df <- data.frame(
+  Methode = names(captures),
+  Nombre = as.numeric(captures)
+)
+df <- df %>%
+  mutate(percentage = Nombre / sum(Nombre) * 100)
+
+# Créer le diagramme en camembert avec les pourcentages
+ggplot(df, aes(x = "", y = Nombre, fill = Methode)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar("y") +
+  theme_void() +
+  geom_text(aes(label = paste0(round(percentage, 1), "%")), position = position_stack(vjust = 0.5)) +
+  labs(title = "Répartition des espèces capturées par les différentes méthodes de pêche") +
+  scale_fill_brewer(palette = "Paired")
+```
+
+
+relation entre mean_RRA et nbr_peche et taille
+```{r eval=FALSE, include=FALSE}
+limite_nombre_capture <- 10
+
+dat <- data %>% 
+  filter(metabarcoding == 1 & IA_DCE > 0 & nbr_capt_DCE>=limite_nombre_capture) %>%
+  select(mean_RRA, nbr_peche, taille, hauteur_eau, RRA_teleo, RRA_MiFish, Espece, IA_DCE)
+
+
+dat$mean_RRA <- as.numeric(dat$mean_RRA)
+dat$IA_DCE <- as.numeric(dat$IA_DCE)
+
+
+dat$IA_DCE <- 1 / (1 + exp(dat$IA_DCE))
+dat$taille_IA_DCE <- dat$IA_DCE * dat$taille
+
+model <- lm(mean_RRA ~ taille_IA_DCE, data = dat)
+
+summary_model <- summary(model)
+r_squared <- summary_model$r.squared
+
+plot(dat$taille_IA_DCE, dat$mean_RRA, 
+     xlab = "taille * IA_DCE", 
+     ylab = "mean_RRA", 
+     main = paste("Linear Regression\n R² =", round(r_squared, 3)))
+
+
+abline(model, col = "blue")
+
+text(x = max(dat$taille_IA_DCE) * 0.7, y = max(dat$mean_RRA) * 0.9, 
+     labels = paste("R² =", round(r_squared, 3)), col = "red")
+
+```
+
+graphe de l'evolution de R carré selon certaine modalité
+```{r eval=FALSE, include=FALSE}
+
+path <- getwd()
+data <- read_excel(paste0(path, "/daaaata.xlsx"))
+
+# Function to calculate R-squared for different `nombre_annee_a_prendre` and `limite_nombre_capture`
+calculate_r_squared <- function(data, nombre_annee_a_prendre, limite_nombre_capture) {
+  athanase <- readRDS(paste0(path, "/DCE_athanase.rds"))
+  athanase <- distinct(athanase)
+  liste_annee <- sort(unique(athanase$Year))
+  n_year <- length(liste_annee)
+  limite <- liste_annee[n_year - nombre_annee_a_prendre]
+  athanase <- athanase %>% filter(Year > limite)
+  all_years <- unique(athanase$Year)
+  colnames(athanase)[1] <- "Espece"
+  
+  species_years <- expand.grid(Espece = unique(athanase$Espece), Year = all_years)
+  
+  complete_data <- species_years %>%
+    left_join(athanase %>%
+                group_by(Espece, Year) %>%
+                summarise(total_capture = sum(total_capture, na.rm = TRUE), .groups = 'drop'),
+              by = c("Espece", "Year"))
+  
+  complete_data$total_capture[is.na(complete_data$total_capture)] <- 0
+  
+  mean_individuals_per_year <- complete_data %>%
+    group_by(Espece) %>%
+    summarise(mean_capture_per_year = mean(total_capture))
+  
+  mean_individuals_per_year$code_taxon <- rep("", length(mean_individuals_per_year$Espece))
+  mean_individuals_per_year$tot_capt <- rep(0, length(mean_individuals_per_year$Espece))
+  
+  for (i in (1:length(mean_individuals_per_year$Espece))) {
+    index <- which(athanase$Espece == mean_individuals_per_year$Espece[i])[1]
+    mean_individuals_per_year$code_taxon[i] <- athanase$code_taxon[index]
+    dd <- complete_data %>% filter(Espece == mean_individuals_per_year$Espece[i])
+    mean_individuals_per_year$tot_capt[i] <- sum(dd$total_capture)
+  }
+  
+  data$IA_DCE <- rep(0, length(data$IA_DCE))
+  data$nbr_capt_DCE <- rep(0, length(data$IA_DCE))
+  data$nbr_peche_DCE <- rep(0, length(data$IA_DCE))
+  for (i in (1:length(data$code_taxon))) {
+    index <- which(mean_individuals_per_year$code_taxon == data$code_taxon[i])
+    if (length(index) > 0) {
+      data$IA_DCE[i] <- mean_individuals_per_year$mean_capture_per_year[index]
+      data$nbr_capt_DCE[i] <- mean_individuals_per_year$tot_capt[index]
+    }
+  }
+  
+  dat <- data %>% 
+    filter(metabarcoding == 1 & IA_DCE > 0 & nbr_capt_DCE >= limite_nombre_capture) %>%
+    select(mean_RRA, nbr_peche, taille, hauteur_eau, RRA_teleo, RRA_MiFish, Espece, IA_DCE)
+  
+  dat$mean_RRA <- as.numeric(dat$mean_RRA)
+  dat$IA_DCE <- as.numeric(dat$IA_DCE)
+  
+  dat$IA_DCE <- 1 / (1 + exp(dat$IA_DCE))
+  dat$taille_IA_DCE <- dat$IA_DCE * dat$taille
+  
+  model <- lm(mean_RRA ~ taille_IA_DCE, data = dat)
+  summary_model <- summary(model)
+  r_squared <- summary_model$r.squared
+  
+  return(r_squared)
+}
+
+
+results <- data.frame(
+  nombre_annee_a_prendre = rep(1:10, each = 3),
+  limite_nombre_capture = rep(c(1, 5,10), times = 10),
+  r_squared = NA
+)
+
+for (i in 1:nrow(results)) {
+  results$r_squared[i] <- calculate_r_squared(
+    data, 
+    results$nombre_annee_a_prendre[i], 
+    results$limite_nombre_capture[i]
+  )
+}
+
+
+ggplot(results, aes(x = nombre_annee_a_prendre, y = r_squared, color = factor(limite_nombre_capture))) +
+  geom_line() +
+  geom_point() +
+  labs(
+    title = "R² selon le nombre d'année considérée et le nbr de capture minimale pour les IA",
+    x = "Nombre d'année DCE prise en compte",
+    y = "R²",
+    color = "nombre de capture limite"
+  ) +
+  theme_minimal()
+
+```
+
+#proportion RRA par famille 
+```{r eval=FALSE, include=FALSE}
+data_metabarcoding <- data %>% filter(metabarcoding==1) %>% select(Ordre,Famille,Espece,RRA_CO1,RRA_teleo,RRA_MiFish)
+
+summary_data <- data_metabarcoding %>%
+  group_by(Famille) %>%
+  summarise(RRA_CO1 = sum(RRA_CO1), RRA_teleo = sum(RRA_teleo), RRA_MiFish = sum(RRA_MiFish))
+
+summary_data_long <- summary_data %>%
+  pivot_longer(cols = c(RRA_CO1, RRA_teleo, RRA_MiFish), names_to = "Marqueur", values_to = "Proportion")
+
+ggplot(summary_data_long, aes(x = Famille, y = Proportion, fill = Marqueur)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Proportion des reads assignées à chaque famille pour chaque marqueur",
+       x = "Famille", y = "Proportion des reads") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_manual(values = c("RRA_CO1" = "skyblue", "RRA_teleo" = "orange", "RRA_MiFish" = "green"))
+```
+
+taille  
+```{r eval=FALSE, include=FALSE}
+data$nbr_ref <- rep(0,length(data$code_taxon))
+for(i in (1:length(data$code_taxon))){
+  data$nbr_ref[i] <- data$ref_CO1[i]+data$ref_MiFish[i]+data$ref_teleo[i]
+}
+
+taille_metabarcoding_pas_DCE <- data %>% filter(metabarcoding == 1 & nbr_capt_DCE == 0) %>% pull(taille)
+
+taille_DCE_pas_metabarcoding <- data %>% filter(metabarcoding == 0 & nbr_capt_DCE > 0 & nbr_ref>0) %>% pull(taille)
+
+# taille_DCE_pas_metabarcoding <- data %>% filter(metabarcoding == 0 & nbr_capt_DCE > 0 ) %>% pull(taille)
+
+shapiro.test(taille_metabarcoding_pas_DCE)
+shapiro.test(taille_DCE_pas_metabarcoding)
+# Vérifier l'homogénéité des variances avec un test de Levene
+library(car)
+# leveneTest(c(taille_metabarcoding_pas_DCE, taille_DCE_pas_metabarcoding), 
+#            group = rep(c("metabarcoding", "filet"), each = 50))
+
+t.test(taille_metabarcoding_pas_DCE, taille_DCE_pas_metabarcoding, alternative = "less")
+
+taille_data <- data.frame(
+  Taille = c(taille_metabarcoding_pas_DCE, taille_DCE_pas_metabarcoding),
+  Method = c(rep("Metabarcoding Only", length(taille_metabarcoding_pas_DCE)), 
+             rep("DCE Only", length(taille_DCE_pas_metabarcoding)))
+)
+
+ggplot(taille_data, aes(x = Method, y = Taille, fill = Method)) +
+  geom_boxplot() +
+  labs(title = "Size Distribution of Species Detected only by Metabarcoding or by DCE",
+       x = "Detection Method",
+       y = "Size (mm)") +
+  theme_minimal() +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+        axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12),
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_text(size = 12)) +
+  scale_fill_manual(values = c("Metabarcoding Only" = "skyblue", "DCE Only" = "orange"))
+```
+
+lien entre taille*IA avec espèce peches sur App au filet et RRA
+```{r eval=FALSE, include=FALSE}
+dat <- data %>% filter(metabarcoding == 1 & peche >0)
+# for(i in(1:length(dat$code_taxon))){
+# dat$nbr_peche[i] <- 1/(1+exp(-dat$nbr_peche[i]))}
+dat$PxT <- dat$nbr_peche*dat$taille
+plot(dat$PxT)
+
+plot(x=dat$PxT,y=dat$mean_RRA)
+```
+
+correlation teleo Mifsh
+```{r eval=FALSE, include=FALSE}
+dat <- data %>%  filter(RRA_teleo>0 & RRA_MiFish>0)
+RRA_teleo <- dat %>% pull(RRA_teleo)
+RRA_MiFish <- dat %>% pull(RRA_MiFish)
+
+correlation_score <- cor(RRA_teleo, RRA_MiFish)
+correlation_MiFish <- cor(dat$POO_MiFish,dat$RRA_MiFish)
+correlation_teleo <- cor(dat$POO_teleo,dat$RRA_teleo)
+
+print(paste("Le score de corrélation est:", correlation_score))
+
+# Créer un graphique de dispersion avec une ligne de régression
+ggplot(dat, aes(x = RRA_teleo, y = RRA_MiFish)) +
+  geom_point(color = 'blue') +
+  geom_smooth(method = 'lm', color = 'red', se = FALSE) +
+  labs(title = "Corrélation entre RRA_teleo et RRA_MiFish",
+       x = "RRA_teleo",
+       y = "RRA_MiFish") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    axis.title = element_text(size = 12)
+  )
+```
+
+
+
+
+
+beau graphe taille 
+```{r eval=FALSE, include=FALSE}
+library(gridExtra)
+
+data$nbr_ref <- rep(0,length(data$code_taxon))
+for(i in (1:length(data$code_taxon))){
+  data$nbr_ref[i] <- data$ref_CO1[i]+data$ref_MiFish[i]+data$ref_teleo[i]
+}
+
+
+
+taille_metabarcoding_pas_DCE <- data %>% filter(metabarcoding == 1 & nbr_capt_DCE == 0) %>% pull(taille)
+taille_DCE_pas_metabarcoding <- data %>% filter(metabarcoding == 0 & nbr_capt_DCE > 0 & nbr_ref > 0) %>% pull(taille)
+
+# Combine data into a single data frame for plotting
+combined_data <- data.frame(
+  taille = c(taille_metabarcoding_pas_DCE, taille_DCE_pas_metabarcoding),
+  method = c(rep("only eDNA", length(taille_metabarcoding_pas_DCE)), rep("only nets", length(taille_DCE_pas_metabarcoding)))
+)
+
+# Plot the data
+g1 <- ggplot(combined_data, aes(x = taille, fill = method)) +
+  geom_density(alpha = 0.6) +
+  scale_fill_manual(values = c("only eDNA" = "orange", "only nets" = "blue")) +
+   labs(x = "Species length (mm)", y = "Density") +
+  theme_minimal()+
+   theme(legend.position = "none")
+
+taille_data <- data.frame(
+  Taille = c(taille_metabarcoding_pas_DCE, taille_DCE_pas_metabarcoding),
+  Method = c(rep("only eDNA", length(taille_metabarcoding_pas_DCE)), 
+             rep("only nets", length(taille_DCE_pas_metabarcoding)))
+)
+
+g2 <- ggplot(taille_data, aes(x = Method, y = Taille, fill = Method)) +
+  geom_boxplot() +
+  labs(title = "Size Distribution of Species Detected only by Metabarcoding or by DCE",
+       x = "Detection Method",
+       y = "Size (mm)") +
+  theme_minimal() +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+        axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12),
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_text(size = 12)) +
+  scale_fill_manual(values = c("only eDNA" = "orange", "only nets" = "blue"))
+
+options(repr.plot.width = 14, repr.plot.height = 7)
+
+grid.arrange(g1, g2, ncol = 2)
+g1
+g2
+```
+
+effet de l'habitat
+```{r eval=FALSE, include=FALSE}
+library(FactoMineR)
+
+que_filet <- data %>% filter((filet == 1 & metabarcoding == 0) | (nbr_capt_DCE >0 & metabarcoding == 0)) %>% pull(Espece)
+
+
+data$peche_filet_DCE_et_tradi <- rep(0,length(data$code_taxon))
+for(i in (1:length(data$code_taxon))){
+  if(data$Espece[i] %in% que_filet){
+    data$peche_filet_DCE_et_tradi[i] <- 1
+  }
+}
+
+data <- data %>% select(Espece,peche_filet_DCE_et_tradi,metabarcoding,hauteur_eau,crique, fleuve,estuaire, saut, berge, marais )
+data <- data %>%
+  mutate(detection_method = ifelse(metabarcoding == 1, "metabarcoding", "peche_filet_DCE"))
+table_habitat_detection <- table(data$hauteur_eau, data$detection_method)
+chi_square_test <- chisq.test(table_habitat_detection)
+
+data_long <- data %>%
+  pivot_longer(cols = c(crique, fleuve, estuaire, saut, berge, marais),
+               names_to = "habitat",
+               values_to = "presence",
+               values_drop_na = TRUE) %>%
+  filter(presence == 1)
+table_habitat_detection <- table(data_long$habitat, data_long$detection_method)
+chi_square_test <- chisq.test(table_habitat_detection)
+```
+
+aire fonctionnelle 
+```{r eval=FALSE, include=FALSE}
+library(FactoMineR)
+library(factoextra)
+
+# que_filet <- data %>% filter((filet == 1 & metabarcoding == 0) | (nbr_capt_DCE >0 & metabarcoding == 0)) %>% pull(Espece)
+
+ que_filet <- data %>% filter( nbr_capt_DCE >0 & metabarcoding == 0) %>% pull(Espece)
+
+
+data$peche_filet_DCE_et_tradi <- rep(0,length(data$code_taxon))
+for(i in (1:length(data$code_taxon))){
+  if(data$Espece[i] %in% que_filet){
+    data$peche_filet_DCE_et_tradi[i] <- 1
+  }
+}
+
+
+
+morpho <- read.csv(file=paste0(path,"/Morpho_Fish_Guiana.csv"),sep = ";")
+morpho$Genus.species  <- tolower(gsub("\\.", " ", morpho$Genus.species))
+data <- data %>%  select(Espece,peche_filet_DCE_et_tradi,metabarcoding,taille)
+colnames(morpho)[1] <- "Espece"
+#on fait la jointure 
+joint <- left_join(morpho,data,by= "Espece") %>%  filter(!is.na(peche_filet_DCE_et_tradi))
+
+
+
+joint <- joint %>% filter(metabarcoding == 1 | peche_filet_DCE_et_tradi == 1)
+
+joint <- joint %>%
+  mutate(detection_method = ifelse(metabarcoding == 1, "metabarcoding", "peche_filet_DCE"))
+joint <- joint %>% select(-c(metabarcoding,peche_filet_DCE_et_tradi))
+
+#ACP
+numerical_data <- joint %>% select_if(is.numeric)
+# numerical_data <- numerical_data %>% select(-taille)
+
+pca_result <- PCA(numerical_data, scale.unit = TRUE, graph = FALSE)
+
+
+fviz_pca_ind(pca_result,
+             geom.ind = "point", 
+             col.ind = joint$detection_method, 
+             palette = c("blue", "orange"), 
+             addEllipses = TRUE,
+             legend.title = "Detection Method") +
+  theme_minimal() +
+  labs(title = "PCA of Fish Species",
+       x = "PC1",
+       y = "PC2")
+
+#on regarde les différentes contributions
+var_contrib <- get_pca_var(pca_result)$contrib
+print(var_contrib)
+fviz_contrib(pca_result, choice = "var", axes = 1, top = 10)
+fviz_contrib(pca_result, choice = "var", axes = 2, top = 10)
+
+```
+exploration de Ed/Hd
+```{r eval=FALSE, include=FALSE}
+joint2 <- joint %>%  select(Espece,detection_method,Ed.Hd)
+ggplot(joint2, aes(x = detection_method, y = Ed.Hd)) +
+    geom_boxplot() +
+    labs(title = "Boxplot of Ed.Hd by Detection Method", x = "Detection Method", y = "Ed.Hd") +
+    theme_minimal()
+```
+
+
+
+```{r}
+data <- data %>% filter(metabarcoding==0,nbr_peche>0)
+hist(data$nbr_peche)
+```
+
+
+
+tableau final pour la publication
+```{r}
+library(kableExtra)
+
+data <- data %>% select(Famille,Espece,metabarcoding,DCE,peche) %>% arrange(Famille, Espece)
+colnames(data) <- c("Family","Species","Metabarcoding","DCE","Traditionnal_methods")
+
+
+  
+
+
+data_sorted <- data %>%
+  mutate(Metabarcoding = ifelse(Metabarcoding == 1, "✓", ""),
+         DCE = ifelse(DCE == 1, "✓", ""),
+         Traditionnal_methods = ifelse(Traditionnal_methods == 1, "✓", ""))
+
+kable(data_sorted, format = "latex", booktabs = TRUE, linesep = "", 
+      col.names = c("Espèce", "Famille", "Metabarcoding", "DCE", "Pêche")) %>%
+  kable_styling(latex_options = c("striped", "hold_position"))
+
+
+data_sorted %>%
+  kbl() %>%
+  kable_classic_2(full_width = F) %>% save_kable(file = "table1.html", self_contained = T)
+
+```
+
+
+tableau marqueur
+```{r}
+marker <- c("Teleo","MiFish","CO1mg2")
+ASVs <- c(191,335,2067)
+number_species <- c(62,59,40)
+specificite <- c("fish","fish","generic")
+d <- as.data.frame(cbind(marker =marker,ASVs = ASVs,number_species = number_species,specificity=specificite))
+d %>% kbl() %>%
+  kable_classic_2(full_width = F) %>% save_kable(file = "table2.html", self_contained = T)
+```
+
